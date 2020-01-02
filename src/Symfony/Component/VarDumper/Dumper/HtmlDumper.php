@@ -142,6 +142,11 @@ class HtmlDumper extends CliDumper
     public function dump(Data $data, $output = null, array $extraDisplayOptions = [])
     {
         $this->extraDisplayOptions = $extraDisplayOptions;
+
+        if (isset($this->extraDisplayOptions['maxDepth']) && is_numeric($this->extraDisplayOptions['maxDepth'])) {
+            $data = $data->withMaxDepth($this->extraDisplayOptions['maxDepth']);
+        }
+
         $result = parent::dump($data, $output);
         $this->dumpId = 'sf-dump-'.mt_rand();
 
@@ -802,7 +807,7 @@ EOHTML
     /**
      * {@inheritdoc}
      */
-    public function dumpString(Cursor $cursor, $str, $bin, $cut)
+    public function dumpString(Cursor $cursor, string $str, bool $bin, int $cut)
     {
         if ('' === $str && isset($cursor->attr['img-data'], $cursor->attr['content-type'])) {
             $this->dumpKey($cursor);
@@ -819,7 +824,7 @@ EOHTML
     /**
      * {@inheritdoc}
      */
-    public function enterHash(Cursor $cursor, $type, $class, $hasChild)
+    public function enterHash(Cursor $cursor, int $type, $class, bool $hasChild)
     {
         if (Cursor::HASH_OBJECT === $type) {
             $cursor->attr['depth'] = $cursor->depth;
@@ -852,7 +857,7 @@ EOHTML
     /**
      * {@inheritdoc}
      */
-    public function leaveHash(Cursor $cursor, $type, $class, $hasChild, $cut)
+    public function leaveHash(Cursor $cursor, int $type, $class, bool $hasChild, int $cut)
     {
         $this->dumpEllipsis($cursor, $hasChild, $cut);
         if ($hasChild) {
@@ -959,7 +964,7 @@ EOHTML
     /**
      * {@inheritdoc}
      */
-    protected function dumpLine($depth, $endOfValue = false)
+    protected function dumpLine(int $depth, bool $endOfValue = false)
     {
         if (-1 === $this->lastDepth) {
             $this->line = sprintf($this->dumpPrefix, $this->dumpId, $this->indentPad).$this->line;
